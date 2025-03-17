@@ -81,7 +81,7 @@ export default function HeroSection() {
                     <p className="text-gray-300 mb-4">
                       یہ ایک عمدہ کتاب ہے جو آپ کو پسند آئے گی۔
                     </p>
-                    <button className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-primary transition-colors duration-300 group-hover:shadow-lg group-hover:shadow-primary/50">
+                    <button className="w-full px-4 py-2 bg-white text-dark rounded-lg hover:bg-primary transition-colors duration-300 group-hover:shadow-lg group-hover:shadow-primary/50">
                       مزید پڑھیں
                     </button>
                   </div>
