@@ -7,8 +7,8 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "sw
 const notoUrdu = Noto_Nastaliq_Urdu({ variable: "--font-urdu", subsets: ["arabic"], display: "swap" });
 
 export const metadata = {
-  title: "حشمت طاہرہ",
-  description: "یہ ایک ادبی ویب سائٹ ہے جہاں آپ کہانیاں اور مضامین پڑھ سکتے ہیں۔",
+  title: "\u062D\u0634\u0645\u062A \u0637\u0627\u06C1\u0631\u06C1",
+  description: "\u06CC\u06C1 \u0627\u06CC\u06A9 \u0627\u062F\u0628\u06CC \u0648\u06CC\u0628 \u0633\u0627\u0626\u0679 \u06C1\u06D2 \u062C\u06C1\u0627\u06BA \u0622\u067E \u06A9\u06C1\u0627\u0646\u06CC\u0627\u06BA \u0627\u0648\u0631 \u0645\u0636\u0627\u0645\u06CC\u0646 \u067E\u0691\u06BE \u0633\u06A9\u062A\u06D2 \u06C1\u06CC\u06BA\u060C",
 };
 
 export default function RootLayout({ children }) {
