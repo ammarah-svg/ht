@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
-import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -58,16 +57,8 @@ export async function POST(req) {
         );
       }
 
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user._id },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-      );
-
       return NextResponse.json({
         success: true,
-        token,
         user: {
           id: user._id,
           firstName: user.firstName,

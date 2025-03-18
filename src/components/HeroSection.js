@@ -27,10 +27,92 @@ export default function HeroSection() {
   const openModal = (signup) => {
     setIsSignUp(signup);
     setIsModalOpen(true);
+    setError("");
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setError("");
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      role: "reader"
+    });
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          role: formData.role
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+      
+      showToast("Account created successfully!", "success");
+      login(data.user);
+      closeModal();
+      router.push("/");
+    } catch (err) {
+      setError(err.message);
+      showToast(err.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+      
+      showToast("Logged in successfully!", "success");
+      login(data.user);
+      closeModal();
+      router.push("/");
+    } catch (err) {
+      setError(err.message);
+      showToast(err.message, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,41 +183,7 @@ export default function HeroSection() {
                 {isSignUp ? "اکاؤنٹ بنائیں" : "لاگ ان کریں"}
               </h2>
               {isSignUp ? (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  setLoading(true);
-                  setError("");
-                  
-                  try {
-                    const response = await fetch("/api/auth/signup", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(formData),
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                      throw new Error(data.error || "Signup failed");
-                    }
-                    
-                    localStorage.setItem("token", data.token);
-                    showToast("Account created successfully!", "success");
-                    setFormData({
-                      firstName: "",
-                      lastName: "",
-                      email: "",
-                      password: "",
-                      role: "reader"
-                    });
-                    closeModal();
-                    router.push("/");
-                  } catch (err) {
-                    setError(err.message);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}>
+                <form onSubmit={handleSignup}>
                   <input
                     type="text"
                     placeholder="پہلا نام"
@@ -199,42 +247,7 @@ export default function HeroSection() {
                   </button>
                 </form>
               ) : (
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  setLoading(true);
-                  setError("");
-                  
-                  try {
-                    const response = await fetch("/api/auth/login", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(formData),
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                      throw new Error(data.error || "Login failed");
-                    }
-                    
-                    login({ token: data.token });
-                    showToast("Logged in successfully!", "success");
-                    setFormData({
-                      firstName: "",
-                      lastName: "",
-                      email: "",
-                      password: "",
-                      role: "reader"
-                    });
-                    closeModal();
-                    router.push("/");
-                  } catch (err) {
-                    setError(err.message);
-                    showToast(err.message, "error");
-                  } finally {
-                    setLoading(false);
-                  }
-                }}>
+                <form onSubmit={handleLogin}>
                   <input
                     type="email"
                     placeholder="ای میل"
@@ -251,6 +264,7 @@ export default function HeroSection() {
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
                   />
+                  {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
                   <button 
                     type="submit" 
                     className="w-full bg-[#da713a] text-white p-2 rounded hover:bg-[#da713a]/90 disabled:opacity-50"
@@ -263,22 +277,23 @@ export default function HeroSection() {
               <p className="text-center mt-4">
                 {isSignUp ? "پہلے سے اکاؤنٹ موجود ہے؟" : "اکاؤنٹ نہیں ہے؟"} {" "}
                 <button
-                  onClick={() => openModal(!isSignUp)}
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setError("");
+                  }}
                   className="text-[#da713a] font-semibold"
                 >
                   {isSignUp ? "لاگ ان کریں" : "سائن اپ کریں"}
                 </button>
               </p>
-              
             </motion.div>
           </div>
         )}
       </section>
 
-
       <section>
-{/* Featured Books Section */}
-<div className="relative bg-gradient-to-b from-black/0 to-background py-20">
+        {/* Featured Books Section */}
+        <div className="relative bg-gradient-to-b from-black/0 to-background py-20">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-white mb-12">
               نئی شائع شدہ کتابیں
@@ -316,7 +331,6 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
-
       </section>
     </>
   );
