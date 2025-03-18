@@ -24,7 +24,7 @@ export async function POST(req) {
     const existingUser = await User.findOne({ email: validatedData.email });
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { success: false, error: 'User already exists' },
         { status: 400 }
       );
     }
@@ -40,6 +40,7 @@ export async function POST(req) {
     );
 
     return NextResponse.json({
+      success: true,
       token,
       user: {
         id: user._id,
@@ -51,14 +52,18 @@ export async function POST(req) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const formattedErrors = error.errors.map(err => ({
+        path: err.path.join('.'),
+        message: err.message
+      }));
       return NextResponse.json(
-        { error: 'Invalid input data', details: error.errors },
+        { success: false, error: 'Validation failed', details: formattedErrors },
         { status: 400 }
       );
     }
     console.error('Signup error:', error);
     return NextResponse.json(
-      { error: 'An error occurred during signup. Please try again.' },
+      { success: false, error: 'Internal server error', message: 'An error occurred during signup. Please try again.' },
       { status: 500 }
     );
   }

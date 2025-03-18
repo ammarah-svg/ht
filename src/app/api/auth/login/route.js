@@ -21,7 +21,7 @@ export async function POST(req) {
     const user = await User.findOne({ email: validatedData.email });
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { success: false, error: 'Invalid credentials' },
         { status: 401 }
       );
     }
@@ -30,7 +30,7 @@ export async function POST(req) {
     const isPasswordValid = await user.comparePassword(validatedData.password);
     if (!isPasswordValid) {
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        { success: false, error: 'Invalid credentials' },
         { status: 401 }
       );
     }
@@ -43,6 +43,7 @@ export async function POST(req) {
     );
 
     return NextResponse.json({
+      success: true,
       token,
       user: {
         id: user._id,
@@ -54,15 +55,20 @@ export async function POST(req) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const formattedErrors = error.errors.map(err => ({
+        path: err.path.join('.'),
+        message: err.message
+      }));
       return NextResponse.json(
-        { error: 'Invalid input data', details: error.errors },
+        { success: false, error: 'Validation failed', details: formattedErrors },
         { status: 400 }
       );
     }
     console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'An error occurred during login. Please try again.' },
+      { success: false, error: 'Internal server error', details: error.message || 'Something went wrong' },
       { status: 500 }
     );
+    
   }
 }
