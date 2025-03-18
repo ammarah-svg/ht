@@ -65,8 +65,9 @@ export async function POST(req) {
       );
     }
     console.error('Login error:', error);
+    const errorMessage = 'An error occurred during login. Please try again.';
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message || 'Something went wrong' },
+      { success: false, error: 'Internal server error', message: errorMessage },
       { status: 500 }
     );
     
