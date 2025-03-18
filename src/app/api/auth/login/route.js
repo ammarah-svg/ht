@@ -12,28 +12,8 @@ export async function POST(req) {
   try {
     await connectDB();
     
-    // Ensure request has a body
-    if (!req.body) {
-      return NextResponse.json(
-        { success: false, error: "Request body is missing" },
-        { status: 400 }
-      );
-    }
-
-    let body;
-    try {
-      const text = await req.text(); // Get raw body text
-      body = JSON.parse(text); // Parse manually
-    } catch (error) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Invalid JSON format in request body",
-          details: error.message 
-        },
-        { status: 400 }
-      );
-    }
+    // Parse request body
+    const body = await req.json();
 
     // Validate request body
     try {
@@ -78,7 +58,7 @@ export async function POST(req) {
           { status: 400 }
         );
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
   } catch (error) {
     console.error("Login error:", error);
