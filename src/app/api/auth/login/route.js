@@ -12,7 +12,13 @@ const loginSchema = z.object({
 export async function POST(req) {
   try {
     await connectDB();
-    const body = await req.json();
+    
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      return NextResponse.json({ success: false, error: "Invalid JSON format" }, { status: 400 });
+    }
 
     // Validate request body
     const validatedData = loginSchema.parse(body);
@@ -20,19 +26,13 @@ export async function POST(req) {
     // Find user by email
     const user = await User.findOne({ email: validatedData.email });
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Check password
     const isPasswordValid = await user.comparePassword(validatedData.password);
     if (!isPasswordValid) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Generate JWT token
@@ -54,22 +54,11 @@ export async function POST(req) {
       }
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const formattedErrors = error.errors.map(err => ({
-        path: err.path.join('.'),
-        message: err.message
-      }));
-      return NextResponse.json(
-        { success: false, error: 'Validation failed', details: formattedErrors },
-        { status: 400 }
-      );
-    }
-    console.error('Login error:', error);
-    const errorMessage = 'An error occurred during login. Please try again.';
+    console.error("Login error:", error);
+
     return NextResponse.json(
-      { success: false, error: 'Internal server error', message: errorMessage },
+      { success: false, error: "An error occurred during login. Please try again.", details: error.message },
       { status: 500 }
     );
-    
   }
 }
