@@ -55,12 +55,13 @@ export async function POST(req) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors },
+        { error: 'Invalid input data', details: error.errors },
         { status: 400 }
       );
     }
+    console.error('Login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'An error occurred during login. Please try again.' },
       { status: 500 }
     );
   }
