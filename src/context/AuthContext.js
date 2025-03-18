@@ -1,51 +1,84 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/components/Toast';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const showToast = useToast();
 
   useEffect(() => {
-    // Check if user is logged in on mount
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Validate and decode token
-      try {
-        const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
-        
-        if (Date.now() >= expirationTime) {
-          // Token has expired
-          localStorage.removeItem('token');
-          setUser(null);
-        } else {
-          setUser({ token });
-        }
-      } catch (error) {
-        // Invalid token
-        localStorage.removeItem('token');
-        setUser(null);
-      }
-    }
-    setLoading(false);
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Listen for changes on auth state (sign in, sign out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('token', userData.token);
+  const login = async ({ email, password }) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          showToast('Please confirm your email before logging in. Check your inbox for the confirmation link.', 'error');
+          return null;
+        }
+        if (error.message.includes('Invalid login credentials')) {
+          showToast('Invalid email or password. Please try again.', 'error');
+          return null;
+        }
+        showToast(error.message, 'error');
+        return null;
+      }
+      
+      if (!data.user.email_confirmed_at) {
+        showToast('Please confirm your email before logging in. Check your inbox for the confirmation link.', 'error');
+        return null;
+      }
+      
+      showToast('Successfully logged in!', 'success');
+      return data;
+    } catch (error) {
+      showToast('An unexpected error occurred. Please try again later.', 'error');
+      return null;
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
+  const signup = async ({ email, password, ...metadata }) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: metadata,
+      },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {children}
+    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 }

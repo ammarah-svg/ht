@@ -68,13 +68,13 @@ export default function HeroSection() {
         throw new Error(data.error || "Signup failed");
       }
       
-      showToast("Account created successfully!", "success");
-      login(data.user);
       closeModal();
-      router.push("/");
+      const authResult = await login(data.user);
+      if (authResult) {
+        router.push("/");
+      }
     } catch (err) {
       setError(err.message);
-      showToast(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -103,13 +103,13 @@ export default function HeroSection() {
         throw new Error(data.error || "Login failed");
       }
       
-      showToast("Logged in successfully!", "success");
-      login(data.user);
       closeModal();
-      router.push("/");
+      const authResult = await login(data.user);
+      if (authResult) {
+        router.push("/");
+      }
     } catch (err) {
       setError(err.message);
-      showToast(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -157,6 +157,16 @@ export default function HeroSection() {
                   className="px-8 py-3 bg-white text-black rounded-full text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg"
                 >
                   لاگ ان کریں
+                </button>
+              </div>
+            )}
+            {user && (
+              <div className="flex justify-center">
+                <button
+                  onClick={logout}
+                  className="px-8 py-3 bg-[#da713a] text-white rounded-full text-lg font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
+                >
+                  خارج
                 </button>
               </div>
             )}
@@ -237,7 +247,6 @@ export default function HeroSection() {
                     <option value="reader">قارئین</option>
                     <option value="writer">مصنف</option>
                   </select>
-                  {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
                   <button 
                     type="submit" 
                     className="w-full bg-[#da713a] text-white p-2 rounded hover:bg-[#da713a]/90 disabled:opacity-50"
@@ -264,7 +273,6 @@ export default function HeroSection() {
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
                   />
-                  {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
                   <button 
                     type="submit" 
                     className="w-full bg-[#da713a] text-white p-2 rounded hover:bg-[#da713a]/90 disabled:opacity-50"

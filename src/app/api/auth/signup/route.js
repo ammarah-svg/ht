@@ -1,71 +1,52 @@
-import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import User from '@/models/User';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
-const userSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(['reader', 'writer'], "Invalid role selected")
-});
-
-export async function POST(req) {
+export async function POST(request) {
   try {
-    await connectDB();
-    
-    // Parse request body
-    const body = await req.json();
+    const { email, password, firstName, lastName, role } = await request.json();
 
-    // Validate request body
-    try {
-      const validatedData = userSchema.parse(body);
-      
-      // Check if user already exists
-      const existingUser = await User.findOne({ email: validatedData.email });
-      if (existingUser) {
-        return NextResponse.json(
-          { success: false, error: 'User already exists' },
-          { status: 400 }
-        );
-      }
-
-      // Create new user
-      const user = await User.create(validatedData);
-
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role
-        }
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: "Validation failed", 
-            details: error.errors 
-          },
-          { status: 400 }
-        );
-      }
-      throw error;
+    if (!email || !password || !firstName || !lastName) {
+      return NextResponse.json(
+        { error: "All fields are required" },
+        { status: 400 }
+      );
     }
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          role: role || 'reader'
+        }
+      }
+    });
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+
+    // Check if the user needs to confirm their email
+    if (data.user?.identities?.length === 0) {
+      return NextResponse.json(
+        { error: "Email already registered. Please check your inbox for confirmation email." },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      user: data.user,
+      message: "Please check your email for confirmation link."
+    });
   } catch (error) {
-    console.error("Signup error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "An error occurred during signup",
-        details: error.message 
-      },
-      { status: 500 }
+      { error: "Invalid request" },
+      { status: 400 }
     );
   }
 }
