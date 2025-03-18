@@ -9,7 +9,10 @@ module.exports = {
     extend: {
       colors: {
         primary: '#2563eb',
-        background: '#111827'
+        background: '#111827',
+        custom: {
+          orange: '#da713a'
+        }
       },
       fontFamily: {
         sans: ['var(--font-inter)'],

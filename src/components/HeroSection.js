@@ -1,10 +1,38 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useToast } from "./Toast";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HeroSection() {
+  const router = useRouter();
+  const showToast = useToast();
+  const { login, user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "reader"
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const openModal = (signup) => {
+    setIsSignUp(signup);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <>
       <section className="relative min-h-screen w-full">
@@ -28,31 +56,229 @@ export default function HeroSection() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-right" dir="rtl">
               دنیائے کتب میں خوش آمدید
             </h1>
-            <p className="text-xl md:text-2xl mb-12 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl mb-12 max-w-2xl mx-auto text-right" dir="rtl">
               ہماری لائبریری میں بہترین کتابوں کا مجموعہ دریافت کریں
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/signup"
-                className="px-8 py-3 bg-primary text-white rounded-full text-lg font-semibold hover:bg-primary/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-primary/50"
-              >
-                اکاؤنٹ بنائیں
-              </Link>
-              <Link
-                href="/login"
-                className="px-8 py-3 bg-white text-black rounded-full text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg"
-              >
-                لاگ ان کریں
-              </Link>
-            </div>
+            {!user && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => openModal(true)}
+                  className="px-8 py-3 bg-[#da713a] text-white rounded-full text-lg font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
+                >
+                  اکاؤنٹ بنائیں
+                </button>
+                <button
+                  onClick={() => openModal(false)}
+                  className="px-8 py-3 bg-white text-black rounded-full text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                  لاگ ان کریں
+                </button>
+              </div>
+            )}
           </motion.div>
         </div>
 
-        {/* Featured Books Section */}
-        <div className="relative bg-gradient-to-b from-black/0 to-background py-20">
+        {/* Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-md z-50">
+            <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white p-6 rounded-lg shadow-xl w-96 relative"
+            >
+              <button
+                onClick={closeModal}
+                className="absolute top-2 right-2 text-black text-xl font-bold"
+              >
+                ✖
+              </button>
+              <h2 className="text-2xl font-bold mb-4 text-center">
+                {isSignUp ? "اکاؤنٹ بنائیں" : "لاگ ان کریں"}
+              </h2>
+              {isSignUp ? (
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setLoading(true);
+                  setError("");
+                  
+                  try {
+                    const response = await fetch("/api/auth/signup", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(formData),
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                      throw new Error(data.error || "Signup failed");
+                    }
+                    
+                    localStorage.setItem("token", data.token);
+                    showToast("Account created successfully!", "success");
+                    setFormData({
+                      firstName: "",
+                      lastName: "",
+                      email: "",
+                      password: "",
+                      role: "reader"
+                    });
+                    closeModal();
+                    router.push("/");
+                  } catch (err) {
+                    setError(err.message);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}>
+                  <input
+                    type="text"
+                    placeholder="پہلا نام"
+                    className="w-full p-2 border rounded mb-2"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="آخری نام"
+                    className="w-full p-2 border rounded mb-2"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    required
+                  />
+                  <input
+                    type="email"
+                    placeholder="ای میل"
+                    className="w-full p-2 border rounded mb-2"
+                    value={formData.email}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                      if (value && !emailRegex.test(value)) {
+                        showToast("Please enter a valid email address", "error");
+                      }
+                      setFormData({...formData, email: value});
+                    }}
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="پاس ورڈ (مضبوط)"
+                    className="w-full p-2 border rounded mb-2"
+                    value={formData.password}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value && value.length < 8) {
+                        showToast("Password must be at least 8 characters long", "error");
+                      }
+                      setFormData({...formData, password: value});
+                    }}
+                    required
+                  />
+                  <select 
+                    className="w-full p-2 border rounded mb-4 text-right"
+                    value={formData.role}
+                    onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  >
+                    <option value="reader">قارئین</option>
+                    <option value="writer">مصنف</option>
+                  </select>
+                  {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+                  <button 
+                    type="submit" 
+                    className="w-full bg-[#da713a] text-white p-2 rounded hover:bg-[#da713a]/90 disabled:opacity-50"
+                    disabled={loading}
+                  >
+                    {loading ? "..." : "سائن اپ کریں"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setLoading(true);
+                  setError("");
+                  
+                  try {
+                    const response = await fetch("/api/auth/login", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(formData),
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                      throw new Error(data.error || "Login failed");
+                    }
+                    
+                    login({ token: data.token });
+                    showToast("Logged in successfully!", "success");
+                    setFormData({
+                      firstName: "",
+                      lastName: "",
+                      email: "",
+                      password: "",
+                      role: "reader"
+                    });
+                    closeModal();
+                    router.push("/");
+                  } catch (err) {
+                    setError(err.message);
+                    showToast(err.message, "error");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}>
+                  <input
+                    type="email"
+                    placeholder="ای میل"
+                    className="w-full p-2 border rounded mb-2 text-right placeholder-right"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="پاس ورڈ"
+                    className="w-full p-2 border rounded mb-4 text-right placeholder-right"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    required
+                  />
+                  <button 
+                    type="submit" 
+                    className="w-full bg-[#da713a] text-white p-2 rounded hover:bg-[#da713a]/90 disabled:opacity-50"
+                    disabled={loading}
+                  >
+                    {loading ? "..." : "لاگ ان کریں"}
+                  </button>
+                </form>
+              )}
+              <p className="text-center mt-4">
+                {isSignUp ? "پہلے سے اکاؤنٹ موجود ہے؟" : "اکاؤنٹ نہیں ہے؟"} {" "}
+                <button
+                  onClick={() => openModal(!isSignUp)}
+                  className="text-[#da713a] font-semibold"
+                >
+                  {isSignUp ? "لاگ ان کریں" : "سائن اپ کریں"}
+                </button>
+              </p>
+              
+            </motion.div>
+          </div>
+        )}
+      </section>
+
+
+      <section>
+{/* Featured Books Section */}
+<div className="relative bg-gradient-to-b from-black/0 to-background py-20">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-white mb-12">
               نئی شائع شدہ کتابیں
@@ -90,6 +316,7 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
+
       </section>
     </>
   );
