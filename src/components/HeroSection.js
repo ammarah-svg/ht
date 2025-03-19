@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 import { useToast } from "./Toast";
 import { useAuth } from "@/context/AuthContext";
 
+
 export default function HeroSection() {
   const router = useRouter();
   const showToast = useToast();
-  const { login, user } = useAuth();
+  const { login, logout, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
