@@ -13,27 +13,26 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link 
-            href="/" 
-            className="text-2xl font-bold tracking-tighter hover:text-primary transition-colors order-2"
+          <Link             href="/" 
+            className="text-xl font-bold tracking-tighter hover:text-primary transition-colors order-2"
           >
             حشمت طاہرہ
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8 order-1">
+          <div className="hidden md:flex items-center space-x-6 order-1">
             <div className="flex items-center">
               {user && (
                 <button
                   onClick={logout}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-custom-orange to-custom-orange/80 hover:from-custom-orange/90 hover:to-custom-orange/70 rounded-full transition-all duration-300 text-white text-lg font-medium shadow-lg hover:shadow-xl"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-custom-orange to-custom-orange/80 hover:from-custom-orange/90 hover:to-custom-orange/70 rounded-full transition-all duration-300 text-white text-base font-medium shadow-lg hover:shadow-xl"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-4 w-4" />
                   <span>خارج</span>
                 </button>
               )}
             </div>
-            <ul className="flex space-x-8 items-center">
+            <ul className="flex space-x-6 items-center">
               {[
                 ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
                 ['رابطہ کریں', '/contact'],
@@ -45,7 +44,7 @@ export default function Navbar() {
                 <li key={url}>
                   <Link 
                     href={url} 
-                    className="hover:text-primary transition-colors text-lg font-medium"
+                    className="hover:text-primary transition-colors text-base font-medium"
                   >
                     {title}
                   </Link>

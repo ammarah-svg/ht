@@ -19,10 +19,14 @@ export async function POST(request) {
         data: {
           first_name: firstName,
           last_name: lastName,
-          role: role || 'reader'
+          role: role || 'reader',
+          isAdmin: false
         }
       }
     });
+
+    console.log("User Data:", data);
+
 
     if (error) {
       return NextResponse.json(

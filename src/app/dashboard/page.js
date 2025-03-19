@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { uploadBookCover, uploadBookFile } from '@/lib/storage';
-import Toast from '@/components/Toast';
+import Toast from '@/components/ToastMessage';
 
 export default function Dashboard() {
     const [bookData, setBookData] = useState({
@@ -47,7 +47,7 @@ export default function Dashboard() {
                 coverFileName
             );
 
-            if (coverError) throw new Error('Failed to upload cover image');
+            if (coverError) throw new Error(coverError.message || 'Failed to upload cover image');
 
             const pdfFileName = `${Date.now()}-${bookData.pdfFile.name}`;
             const { url: pdfUrl, error: pdfError } = await uploadBookFile(

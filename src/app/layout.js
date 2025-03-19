@@ -2,6 +2,7 @@
 import { Inter, Noto_Nastaliq_Urdu } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/Toast";
 import { AuthProvider } from "@/context/AuthContext";
 
@@ -19,8 +20,11 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning className={`${inter.variable} ${notoUrdu.variable} bg-gray-50 text-gray-900 font-sans antialiased`}>
         <ToastProvider>
           <AuthProvider>
-            <Navbar/>
-            {children}
+            <div className="min-h-screen flex flex-col">
+              <Navbar/>
+              <main className="flex-grow">{children}</main>
+              <Footer/>
+            </div>
           </AuthProvider>
         </ToastProvider>
       </body>

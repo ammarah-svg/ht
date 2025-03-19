@@ -6,28 +6,71 @@ const BOOK_FILES_BUCKET = 'book-files';
 
 // Initialize storage buckets if they don't exist
 async function initializeBuckets() {
-  const { data: buckets, error } = await supabase.storage.listBuckets();
-  
-  if (!buckets?.find(b => b.name === BOOK_COVERS_BUCKET)) {
-    await supabase.storage.createBucket(BOOK_COVERS_BUCKET, {
-      public: true,
-      fileSizeLimit: 5242880, // 5MB
-      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
-    });
-  }
+  try {
+    // Check if buckets exist first, authentication not required for initialization
+    const { data: { user } } = await supabase.auth.getUser();
 
-  if (!buckets?.find(b => b.name === BOOK_FILES_BUCKET)) {
-    await supabase.storage.createBucket(BOOK_FILES_BUCKET, {
-      public: false,
-      fileSizeLimit: 104857600, // 100MB
-      allowedMimeTypes: ['application/pdf']
-    });
+    const { data: buckets, error } = await supabase.storage.listBuckets();
+    // If bucket not found error, we'll create them
+    if (error && error.message.includes('bucket-not-found')) {
+      // Create book covers bucket
+      const { error: coverError } = await supabase.storage.createBucket(BOOK_COVERS_BUCKET, {
+        public: true,
+        fileSizeLimit: 5242880, // 5MB
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
+      });
+      if (coverError && !coverError.message.includes('already exists')) throw coverError;
+
+      // Create book files bucket
+      const { error: fileError } = await supabase.storage.createBucket(BOOK_FILES_BUCKET, {
+        public: false,
+        fileSizeLimit: 104857600, // 100MB
+        allowedMimeTypes: ['application/pdf']
+      });
+      if (fileError && !fileError.message.includes('already exists')) throw fileError;
+
+      return;
+    }
+    if (error) throw error;
+
+    // If buckets exist, check if our required buckets exist
+    if (!buckets?.find(b => b.name === BOOK_COVERS_BUCKET)) {
+      const { error: createError } = await supabase.storage.createBucket(BOOK_COVERS_BUCKET, {
+        public: true,
+        fileSizeLimit: 5242880, // 5MB
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
+      });
+      if (createError && !createError.message.includes('already exists')) throw createError;
+    }
+
+    if (!buckets?.find(b => b.name === BOOK_FILES_BUCKET)) {
+      const { error: createError } = await supabase.storage.createBucket(BOOK_FILES_BUCKET, {
+        public: false,
+        fileSizeLimit: 104857600, // 100MB
+        allowedMimeTypes: ['application/pdf']
+      });
+      if (createError && !createError.message.includes('already exists')) throw createError;
+    }
+  } catch (error) {
+    console.error('Error initializing buckets:', error);
+    throw error;
   }
 }
 
 // Upload book cover image
 export async function uploadBookCover(file, fileName) {
   try {
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('File size exceeds 5MB limit');
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed');
+    }
+
     const { data, error } = await supabase.storage
       .from(BOOK_COVERS_BUCKET)
       .upload(fileName, file, {
@@ -35,7 +78,13 @@ export async function uploadBookCover(file, fileName) {
         upsert: true
       });
 
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('storage/bucket-not-found')) {
+        await initializeBuckets();
+        return uploadBookCover(file, fileName);
+      }
+      throw error;
+    }
 
     const { data: { publicUrl } } = supabase.storage
       .from(BOOK_COVERS_BUCKET)
@@ -44,7 +93,10 @@ export async function uploadBookCover(file, fileName) {
     return { url: publicUrl, error: null };
   } catch (error) {
     console.error('Error uploading book cover:', error);
-    return { url: null, error };
+    return { 
+      url: null, 
+      error: error.message || 'Failed to upload book cover'
+    };
   }
 }
 

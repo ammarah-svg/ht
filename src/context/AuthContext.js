@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      setIsAdmin(currentUser?.user_metadata?.role === 'admin');
+      setIsAdmin(currentUser?.user_metadata?.isAdmin === true);
       setLoading(false);
     });
 
@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      setIsAdmin(currentUser?.user_metadata?.role === 'admin');
+      setIsAdmin(currentUser?.user_metadata?.isAdmin === true);
     });
 
     return () => subscription.unsubscribe();

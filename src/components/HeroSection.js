@@ -138,24 +138,24 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="text-center"
-          >
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 text-right" dir="rtl">
+i          >
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-right" dir="rtl">
               دنیائے کتب میں خوش آمدید
             </h1>
-            <p className="text-xl md:text-2xl mb-12 max-w-2xl mx-auto text-right" dir="rtl">
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-right" dir="rtl">
               ہماری لائبریری میں بہترین کتابوں کا مجموعہ دریافت کریں
             </p>
             {!user && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <button
                   onClick={() => openModal(true)}
-                  className="px-8 py-3 bg-[#da713a] text-white rounded-full text-lg font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
+                  className="px-6 py-2.5 bg-[#da713a] text-white rounded-full text-base font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
                 >
                   اکاؤنٹ بنائیں
                 </button>
                 <button
                   onClick={() => openModal(false)}
-                  className="px-8 py-3 bg-white text-black rounded-full text-lg font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                  className="px-6 py-2.5 bg-white text-black rounded-full text-base font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg"
                 >
                   لاگ ان کریں
                 </button>
@@ -165,13 +165,15 @@ export default function HeroSection() {
               <div className="flex justify-center">
                 <button
                   onClick={logout}
-                  className="px-8 py-3 bg-[#da713a] text-white rounded-full text-lg font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
+                  className="px-6 py-2.5 bg-[#da713a] text-white rounded-full text-base font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
                 >
                   خارج
                 </button>
               </div>
             )}
           </motion.div>
+
+        
         </div>
 
         {/* Modal */}
@@ -245,8 +247,9 @@ export default function HeroSection() {
                     value={formData.role}
                     onChange={(e) => setFormData({...formData, role: e.target.value})}
                   >
-                    <option value="reader">قارئین</option>
-                    <option value="writer">مصنف</option>
+                    <option value="reader">قارئ
+                       </option>
+                    <option value="writer">رائٹر</option>
                   </select>
                   <button 
                     type="submit" 
@@ -331,7 +334,7 @@ export default function HeroSection() {
                     <p className="text-gray-300 mb-4">
                       یہ ایک عمدہ کتاب ہے جو آپ کو پسند آئے گی۔
                     </p>
-                    <button className="w-full px-4 py-2 bg-white text-dark rounded-lg hover:bg-primary transition-colors duration-300 group-hover:shadow-lg group-hover:shadow-primary/50">
+                    <button className="w-full px-4 py-2 bg-white text-dark rounded-lg hover:bg-[#da713a] transition-colors duration-300 group-hover:shadow-lg group-hover:shadow-[white]/50">
                       مزید پڑھیں
                     </button>
                   </div>
@@ -341,6 +344,38 @@ export default function HeroSection() {
           </div>
         </div>
       </section>
+
+
+      <section className="py-20">
+          {/* About the Author Section */}
+          <motion.div
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8, delay: 0.3 }}
+  className="w-full text-center p-8 relative"
+  style={{
+    backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)), url('https://static.vecteezy.com/system/resources/thumbnails/034/073/373/small_2x/a-bookshelf-with-many-books-ai-generated-photo.jpg')`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
+  }}
+>
+  <div className="max-w-4xl mx-auto p-10 rounded-lg text-white">
+    <h2 className="text-4xl md:text-5xl font-bold mb-20 text-right font-urdu" dir="rtl">
+      تعارفِ مصنف
+    </h2>
+    <p className="text-xl md:text-2xl leading-relaxed mb-6 text-right font-urdu tracking-wide" dir="rtl">
+      حشمت طاہرہ ایک نامور پاکستانی مصنفہ ہیں، جو اپنی منفرد تحریری اسلوب کے لیے جانی جاتی ہیں۔ انہوں نے اپنی زندگی کا بیشتر حصہ اردو ادب کی خدمت میں گزارا ہے۔ ان کی تحریروں میں پاکستانی معاشرے کی عکاسی، خواتین کے مسائل اور انسانی جذبات کی ترجمانی نمایاں طور پر نظر آتی ہے۔
+    </p>
+    <p className="text-xl md:text-2xl leading-relaxed text-right font-urdu tracking-wide" dir="rtl">
+      ان کی تخلیقات میں کہانیاں، ناول، اور شاعری شامل ہیں۔ ان کی تحریریں قارئین کے دلوں میں گہری جگہ بناتی ہیں اور معاشرتی شعور کو اجاگر کرتی ہیں۔
+    </p>
+  </div>
+</motion.div>
+
+
+      </section>
+
     </>
   );
 }
