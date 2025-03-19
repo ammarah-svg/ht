@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
 
   return (
     <nav className="fixed w-full z-50 bg-black/20 backdrop-blur-sm text-white">
@@ -35,6 +35,7 @@ export default function Navbar() {
             </div>
             <ul className="flex space-x-8 items-center">
               {[
+                ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
                 ['رابطہ کریں', '/contact'],
                 ['تعریف', '/about'],
                 ['بلاگ', '/blogs'],
@@ -67,6 +68,8 @@ export default function Navbar() {
           <div className="md:hidden">
             <ul className="pt-2 pb-4 space-y-2">
               {[
+                ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
+                ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
                 ['رابطہ کریں', '/contact'],
                 ['تعریف', '/about'],
                 ['بلاگ', '/blogs'],
