@@ -7,12 +7,16 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useToast } from "./Toast";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { Globe } from "lucide-react";
 
 
 export default function HeroSection() {
   const router = useRouter();
   const showToast = useToast();
-  const { login, logout, user } = useAuth();
+  const { login, logout, user, signup } = useAuth();
+  const { language, isUrdu, toggleLanguage, translations } = useLanguage();
+  const t = translations[language].hero;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
@@ -49,32 +53,23 @@ export default function HeroSection() {
     setError("");
     
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
-          role: formData.role
-        })
+      const data = await signup({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        role: formData.role
       });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || "Signup failed");
+
+      if (!data) {
+        throw new Error("Signup failed");
       }
       
+      showToast("Please check your email for verification link", "success");
       closeModal();
-      const authResult = await login(data.user);
-      if (authResult) {
-        router.push("/");
-      }
+      router.push("/");
     } catch (err) {
+      showToast(err.message, "error");
       setError(err.message);
     } finally {
       setLoading(false);
@@ -105,7 +100,10 @@ export default function HeroSection() {
       }
       
       closeModal();
-      const authResult = await login(data.user);
+      const authResult = await login({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password
+      });
       if (authResult) {
         router.push("/");
       }
@@ -139,11 +137,20 @@ export default function HeroSection() {
             transition={{ duration: 0.8 }}
             className="text-center"
 i          >
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 text-right" dir="rtl">
-              دنیائے کتب میں خوش آمدید
+            <div className="absolute right-0 top-0">
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 text-white/90 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{isUrdu ? "English" : "اردو"}</span>
+              </button>
+            </div>
+            <h1 className={`text-4xl md:text-6xl font-bold mb-4 ${isUrdu ? 'text-right' : 'text-left'}`} dir={isUrdu ? "rtl" : "ltr"}>
+              {t.welcome}
             </h1>
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-right" dir="rtl">
-              ہماری لائبریری میں بہترین کتابوں کا مجموعہ دریافت کریں
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-center" dir={isUrdu ? "rtl" : "ltr"}>
+              {t.discover}
             </p>
             {!user && (
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -151,23 +158,13 @@ i          >
                   onClick={() => openModal(true)}
                   className="px-6 py-2.5 bg-[#da713a] text-white rounded-full text-base font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
                 >
-                  اکاؤنٹ بنائیں
+                  {t.signup}
                 </button>
                 <button
                   onClick={() => openModal(false)}
                   className="px-6 py-2.5 bg-white text-black rounded-full text-base font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg"
                 >
-                  لاگ ان کریں
-                </button>
-              </div>
-            )}
-            {user && (
-              <div className="flex justify-center">
-                <button
-                  onClick={logout}
-                  className="px-6 py-2.5 bg-[#da713a] text-white rounded-full text-base font-semibold hover:bg-[#da713a]/90 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-[#da713a]/50"
-                >
-                  خارج
+                  {t.login}
                 </button>
               </div>
             )}
@@ -307,8 +304,8 @@ i          >
         {/* Featured Books Section */}
         <div className="relative bg-gradient-to-b from-black/0 to-background py-20">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center text-white mb-12">
-              نئی شائع شدہ کتابیں
+            <h2 className={`text-3xl font-bold text-center text-white mb-12 ${isUrdu ? 'text-right' : 'text-left'}`} dir={isUrdu ? "rtl" : "ltr"}>
+              {t.newBooks}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[1, 2, 3].map((book) => (
@@ -328,14 +325,14 @@ i          >
                         className="object-cover rounded-lg"
                       />
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2 font-bold">
-                      {`کتاب ${book}`}
+                    <h3 className={`text-xl font-semibold text-white mb-2 font-bold ${isUrdu ? 'text-right' : 'text-left'}`} dir={isUrdu ? "rtl" : "ltr"}>
+                      {`${isUrdu ? 'کتاب' : 'Book'} ${book}`}
                     </h3>
-                    <p className="text-gray-300 mb-4">
-                      یہ ایک عمدہ کتاب ہے جو آپ کو پسند آئے گی۔
+                    <p className={`text-gray-300 mb-4 ${isUrdu ? 'text-right' : 'text-left'}`} dir={isUrdu ? "rtl" : "ltr"}>
+                      {t.bookDescription}
                     </p>
-                    <button className="w-full px-4 py-2 bg-white text-dark rounded-lg hover:bg-[#da713a] transition-colors duration-300 group-hover:shadow-lg group-hover:shadow-[white]/50">
-                      مزید پڑھیں
+                    <button className={`w-full px-4 py-2 bg-white text-dark rounded-lg hover:bg-[#da713a] transition-colors duration-300 group-hover:shadow-lg group-hover:shadow-[white]/50] ${isUrdu ? 'text-right' : 'text-left'}`} dir={isUrdu ? "rtl" : "ltr"}>
+                      {t.readMore}
                     </button>
                   </div>
                 </motion.div>
@@ -361,14 +358,14 @@ i          >
   }}
 >
   <div className="max-w-4xl mx-auto p-10 rounded-lg text-white">
-    <h2 className="text-4xl md:text-5xl font-bold mb-20 text-right font-urdu" dir="rtl">
-      تعارفِ مصنف
+    <h2 className={`text-4xl md:text-5xl font-bold mb-20 ${isUrdu ? 'text-right' : 'text-center'} font-urdu`} dir={isUrdu ? "rtl" : "ltr"}>
+      {t.authorTitle}
     </h2>
-    <p className="text-xl md:text-2xl leading-relaxed mb-6 text-right font-urdu tracking-wide" dir="rtl">
-      حشمت طاہرہ ایک نامور پاکستانی مصنفہ ہیں، جو اپنی منفرد تحریری اسلوب کے لیے جانی جاتی ہیں۔ انہوں نے اپنی زندگی کا بیشتر حصہ اردو ادب کی خدمت میں گزارا ہے۔ ان کی تحریروں میں پاکستانی معاشرے کی عکاسی، خواتین کے مسائل اور انسانی جذبات کی ترجمانی نمایاں طور پر نظر آتی ہے۔
+    <p className={`text-xl md:text-2xl leading-relaxed mb-6 ${isUrdu ? 'text-right' : 'text-center'} font-urdu tracking-wide`} dir={isUrdu ? "rtl" : "ltr"}>
+      {t.authorDescription}
     </p>
-    <p className="text-xl md:text-2xl leading-relaxed text-right font-urdu tracking-wide" dir="rtl">
-      ان کی تخلیقات میں کہانیاں، ناول، اور شاعری شامل ہیں۔ ان کی تحریریں قارئین کے دلوں میں گہری جگہ بناتی ہیں اور معاشرتی شعور کو اجاگر کرتی ہیں۔
+    <p className={`text-xl md:text-2xl leading-relaxed ${isUrdu ? 'text-right' : 'text-center'} font-urdu tracking-wide`} dir={isUrdu ? "rtl" : "ltr"}>
+      {t.authorDescription2}
     </p>
   </div>
 </motion.div>

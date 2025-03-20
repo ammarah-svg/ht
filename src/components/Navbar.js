@@ -1,22 +1,26 @@
 "use client"
 import Link from "next/link";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Globe } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAdmin, logout } = useAuth();
+  const { language, toggleLanguage, translations } = useLanguage();
+  const isUrdu = language === "ur";
 
   return (
     <nav className="fixed w-full z-50 bg-black/20 backdrop-blur-sm text-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link             href="/" 
-            className="text-xl font-bold tracking-tighter hover:text-primary transition-colors order-2"
+          <Link href="/" 
+            className={`text-xl font-bold tracking-tighter hover:text-primary transition-colors order-2 ${isUrdu ? 'font-urdu' : ''}`}
+            dir={isUrdu ? "rtl" : "ltr"}
           >
-            حشمت طاہرہ
+            {isUrdu ? "حشمت طاہرہ" : "Hashmat Tahira"}
           </Link>
 
           {/* Desktop Menu */}
@@ -28,18 +32,18 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-custom-orange to-custom-orange/80 hover:from-custom-orange/90 hover:to-custom-orange/70 rounded-full transition-all duration-300 text-white text-base font-medium shadow-lg hover:shadow-xl"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>خارج</span>
+                  <span>{translations[language].nav.logout}</span>
                 </button>
               )}
             </div>
             <ul className="flex space-x-6 items-center">
               {[
-                ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
-                ['رابطہ کریں', '/contact'],
-                ['تعریف', '/about'],
-                ['بلاگ', '/blogs'],
-                ['کہانیاں', '/stories'],
-                ['ہوم', '/']
+                ...(isAdmin ? [[translations[language].nav.dashboard, '/dashboard']] : []),
+                [translations[language].nav.contact, '/contact'],
+                [translations[language].nav.about, '/about'],
+                [translations[language].nav.blogs, '/blogs'],
+                [translations[language].nav.stories, '/stories'],
+                [translations[language].nav.home, '/']
               ].map(([title, url]) => (
                 <li key={url}>
                   <Link 
@@ -50,6 +54,15 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={toggleLanguage}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-custom-orange to-custom-orange/80 hover:from-custom-orange/90 hover:to-custom-orange/70 rounded-full transition-all duration-300 text-white text-base font-medium shadow-lg hover:shadow-xl"
+                >
+                  <Globe className="h-4 w-4" />
+                  <span>{isUrdu ? "English" : "اردو"}</span>
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -67,17 +80,16 @@ export default function Navbar() {
           <div className="md:hidden">
             <ul className="pt-2 pb-4 space-y-2">
               {[
-                ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
-                ...(isAdmin ? [['ڈیش بورڈ', '/dashboard']] : []),
-                ['رابطہ کریں', '/contact'],
-                ['تعریف', '/about'],
-                ['بلاگ', '/blogs'],
-                ['کہانیاں', '/stories'],
-                ['ہوم', '/'],
-                ...(user ? [['خارج', '#']] : []),
+                ...(isAdmin ? [[translations[language].nav.dashboard, '/dashboard']] : []),
+                [translations[language].nav.contact, '/contact'],
+                [translations[language].nav.about, '/about'],
+                [translations[language].nav.blogs, '/blogs'],
+                [translations[language].nav.stories, '/stories'],
+                [translations[language].nav.home, '/'],
+                ...(user ? [[translations[language].nav.logout, '#']] : [])
               ].map(([title, url]) => (
                 <li key={url}>
-                  {title === 'خارج' ? (
+                  {title === translations[language].nav.logout ? (
                     <button
                       onClick={() => {
                         logout();

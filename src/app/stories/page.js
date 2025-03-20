@@ -9,21 +9,21 @@ const sampleBooks = [
   {
     title: 'پہلی کہانی',
     author: 'احمد حسین',
-    coverImage: '/books/unsplash-book-cover.jpg',
+    coverImage: '/public/book/book1.jpeg',
     onlineReadLink: '/stories/story1',
     downloadLink: '/api/download/story1.pdf'
   },
   {
     title: 'دوسری کہانی',
     author: 'فاطمہ علی',
-    coverImage: '/books/sample-cover-2.jpg',
+    coverImage: '/books/book1.jpeg',
     onlineReadLink: '/stories/story2',
     downloadLink: '/api/download/story2.pdf'
   },
   {
     title: 'تیسری کہانی',
     author: 'محمد عمر',
-    coverImage: '/books/sample-cover-3.jpg',
+    coverImage: '/books/book1.jpeg',
     onlineReadLink: '/stories/story3',
     downloadLink: '/api/download/story3.pdf'
   }
